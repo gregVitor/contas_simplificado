@@ -12,7 +12,6 @@ class CreateAccount extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     private $user;
-    private $deposit;
 
     /**
      * Create a new message instance.

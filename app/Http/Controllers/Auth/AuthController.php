@@ -8,21 +8,17 @@ use App\Validators\AuthValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\EmailService;
+use App\Services\UserService;
 
 class AuthController extends Controller
 {
-    private $userRepository;
-    private $authValidator;
-    private $emailService;
-
     public function __construct(
-        UserRepository $userRepository,
-        AuthValidator  $authValidator,
-        EmailService $emailService
+        private readonly Auth $auth,
+        private readonly UserRepository $userRepository,
+        private readonly UserService $userService,
+        private readonly  AuthValidator  $authValidator,
+        private readonly  EmailService $emailService
     ) {
-        $this->userRepository = $userRepository;
-        $this->authValidator  = $authValidator;
-        $this->emailService = $emailService;
     }
 
     public function registerUser(Request $request)
@@ -30,7 +26,7 @@ class AuthController extends Controller
         try {
             $this->authValidator->validateRegisterUser($request->all());
 
-            $user = $this->userRepository->registerUser($request);
+            $user = $this->userService->create($request);
 
             $this->emailService->sendEmailRegisterUser($user);
 
@@ -52,8 +48,9 @@ class AuthController extends Controller
             $this->authValidator->validateLogin($request->all());
 
             $credentials = $request->only(['email', 'password']);
+            $token = Auth::attempt($credentials);
 
-            if (!$token = Auth::attempt($credentials)) {
+            if (!$token) {
                 return apiResponse("Não autorizado", 401);
             }
 

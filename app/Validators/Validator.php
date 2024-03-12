@@ -16,13 +16,13 @@ abstract class Validator
     public function validate(
         array $data,
         array $rules = [],
-        array $custom_errors = []
+        array $customErrors = []
     ) {
         if (empty($rules) && !empty($this->rules) && is_array($this->rules)) {
             $rules = $this->rules;
         }
 
-        $validator = IlluminateValidator::make($data, $rules, $custom_errors);
+        $validator = IlluminateValidator::make($data, $rules, $customErrors);
         $validator->setAttributeNames(Lang::get('fields'));
 
         if ($validator->fails()) {
