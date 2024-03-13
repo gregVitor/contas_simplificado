@@ -13,13 +13,26 @@ class EmailService extends Mail
     public function sendEmailRegisterUser(
         User   $user
     ) {
-        return Mail::to($user->email)->send(new MailCreateAccount($user));
+        if ($this->valideHostEmailOn()) {
+            return Mail::to($user->email)->send(new MailCreateAccount($user));
+        }
     }
 
     public function sendEmailReceivedTransaction(
         User   $user,
         float $amount
     ) {
-        return Mail::to($user->email)->send(new MailReceivedTransaction($user, $amount));
+        if ($this->valideHostEmailOn()) {
+            return Mail::to($user->email)->send(new MailReceivedTransaction($user, $amount));
+        }
+    }
+
+    private function valideHostEmailOn()
+    {
+        if (!env('MAIL_HOST')) {
+            return false;
+        }
+
+        return true;
     }
 }

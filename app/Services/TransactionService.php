@@ -22,9 +22,9 @@ class TransactionService
     public function create(
         object $user,
         object $request
-    ) {
+    ): void {
         if ($user->type == UserTypeEnum::SHOPKEEPER->value) {
-            abort(403, 'Essa conta nao permite esse tipo de operacao');
+            abort(403, 'Essa conta não permite esse tipo de operação');
         }
 
         $bankAcount = $this->bankAccountRepository->getByUserId($user->id);
@@ -36,7 +36,7 @@ class TransactionService
         $payeeBankAcount = $this->bankAccountRepository->getByFiscalDocument($request->payee);
 
         if (!$payeeBankAcount) {
-            abort(422, 'Conta para transferência nao existe.');
+            abort(422, 'Conta para transferência não existe.');
         }
 
         $transactionSent = [
