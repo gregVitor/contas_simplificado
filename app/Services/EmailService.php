@@ -10,13 +10,6 @@ use Illuminate\Support\Facades\Mail;
 class EmailService extends Mail
 {
 
-    /**
-     * Send email deposit
-     *
-     * @param User $user
-     * @param object $deposit
-     * @return void
-     */
     public function sendEmailRegisterUser(
         User   $user
     ) {
