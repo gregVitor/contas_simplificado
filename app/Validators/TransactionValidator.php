@@ -9,7 +9,6 @@ class TransactionValidator extends Validator
         $rules = [
             'amount' => 'required|numeric',
             'payee' => 'required|int',
-            'payer' => 'required|int',
             'description' => 'string'
         ];
 

@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Enums\TypeUserEnum;
+use App\Enums\UserTypeEnum;
 use App\Models\User;
 
 class UserRepository
@@ -38,7 +38,7 @@ class UserRepository
             'name' => $data->name,
             'email' => $data->email,
             'fiscal_document' => $data->fiscal_document,
-            'type' => strlen($data->fiscal_document) > 11 ? TypeUserEnum::SHOPKEEPER : TypeUserEnum::COMMON,
+            'type' => strlen($data->fiscal_document) > 11 ? UserTypeEnum::SHOPKEEPER : UserTypeEnum::COMMON,
             'password' => $password
         ]);
 

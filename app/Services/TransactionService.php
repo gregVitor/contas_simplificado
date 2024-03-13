@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\ExternalAuthorizerTypeEnum;
 use App\Enums\TransactionTypeEnum;
-use App\Models\BankAccount;
+use App\Enums\UserTypeEnum;
 use App\Repositories\BankAccountRepository;
 use App\Repositories\TransactionRepository;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,9 @@ class TransactionService
 {
     public function __construct(
         private readonly TransactionRepository $transactionRepository,
-        private readonly BankAccountRepository $bankAccountRepository
+        private readonly BankAccountRepository $bankAccountRepository,
+        private readonly ExternalAuthorizerService $externalAuthorizerService,
+        private readonly EmailService $emailService
     ) {
     }
 
@@ -20,43 +23,66 @@ class TransactionService
         object $user,
         object $request
     ) {
+        if ($user->type == UserTypeEnum::SHOPKEEPER->value) {
+            abort(403, 'Essa conta nao permite esse tipo de operacao');
+        }
+
         $bankAcount = $this->bankAccountRepository->getByUserId($user->id);
 
         if (!$bankAcount || $bankAcount->balance < $request->amount) {
             abort(403, 'O saldo atual não é suficiente para transferência.');
         }
 
-        $payee = $this->bankAccountRepository->getByFiscalDocument($request->payee);
+        $payeeBankAcount = $this->bankAccountRepository->getByFiscalDocument($request->payee);
 
-        if (!$payee) {
+        if (!$payeeBankAcount) {
             abort(422, 'Conta para transferência nao existe.');
         }
 
         $transactionSent = [
             'bank_account_id' => $bankAcount->id,
             'origin_bank_account_id' => $bankAcount->id,
-            'destiny_bank_account_id' => $payee->id,
+            'destiny_bank_account_id' => $payeeBankAcount->id,
             'amount' => $request->amount,
             'type' => TransactionTypeEnum::SENT,
             'description' => $request->description
         ];
 
         $transactionReceived = [
-            'bank_account_id' => $payee->id,
+            'bank_account_id' => $payeeBankAcount->id,
             'origin_bank_account_id' => $bankAcount->id,
-            'destiny_bank_account_id' => $payee->id,
+            'destiny_bank_account_id' => $payeeBankAcount->id,
             'amount' => $request->amount,
             'type' => TransactionTypeEnum::RECEIVED,
             'description' => $request->description
         ];
 
+        DB::transaction(function () use ($bankAcount, $payeeBankAcount, $transactionSent, $transactionReceived, $request) {
 
-        DB::transaction(function () use ($bankAcount, $transactionSent, $transactionReceived, $request) {
+            $externalAuthorizer = $this->externalAuthorizerService->checkExternalAuthorizerTranfer();
+
+            if ($externalAuthorizer->message != ExternalAuthorizerTypeEnum::AUTHORIZED->value) {
+                abort(422, 'Transferência indisponivel neste momento. Tente mais tarde');
+            }
+
             $bankAcount->balance -=  $request->amount;
             $bankAcount->save();
 
+            $payeeBankAcount->balance +=  $request->amount;
+            $payeeBankAcount->save();
+
             $this->transactionRepository->create($transactionReceived);
-            return $this->transactionRepository->create($transactionSent);
+            $this->transactionRepository->create($transactionSent);
         });
+
+
+        $externalAuthorizerNotification = $this->externalAuthorizerService->checkExternalAuthorizerSendEmail();
+
+        if (!$externalAuthorizerNotification->message) {
+            abort(202, 'Transferência realizada com sucesso! Porem serviço de notificação esta indisponivel no momento.');
+        }
+
+        $this->emailService->sendEmailReceivedTransaction($user, $request->amount);
+        return;
     }
 }
