@@ -13,22 +13,12 @@ class CreateAccount extends Mailable implements ShouldQueue
 
     private $user;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
     public function __construct(
         $user
     ) {
         $this->user = $user;
     }
 
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
     public function build()
     {
         $objEmail = [
@@ -38,7 +28,7 @@ class CreateAccount extends Mailable implements ShouldQueue
 
         $address = env('MAIL_FROM_DEFAULT');
         $name    = env('APP_NAME');
-        $subject = 'Bem vindo a sua agenda';
+        $subject = 'Bem vindo!';
 
         return $this->view('email.create-account')
             ->from($address, $name)

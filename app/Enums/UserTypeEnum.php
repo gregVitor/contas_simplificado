@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum TypeUserEnum: string
+enum UserTypeEnum: string
 {
     case COMMON = 'common';
     case SHOPKEEPER = 'shopkeeper';
