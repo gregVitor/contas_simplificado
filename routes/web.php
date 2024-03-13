@@ -20,4 +20,10 @@ $router->get('/', function () use ($router) {
 $router->group(['prefix' => 'api/v1'], function () use ($router) {
     $router->post('register', 'Auth\AuthController@registerUser');
     $router->post('login', 'Auth\AuthController@login');
+
+    $router->group(['middleware' => 'auth'], function () use ($router) {
+        $router->group(['prefix' => 'transaction'], function () use ($router) {
+            $router->post('', 'Transaction\TransactionController@create');
+        });        
+    });
 });

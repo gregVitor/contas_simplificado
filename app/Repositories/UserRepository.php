@@ -30,7 +30,7 @@ class UserRepository
      *
      * @return User
      */
-    public function registerUser(object $data)
+    public function create(object $data)
     {
         $password = app('hash')->make($data->password);
 
@@ -38,7 +38,7 @@ class UserRepository
             'name' => $data->name,
             'email' => $data->email,
             'fiscal_document' => $data->fiscal_document,
-            'type' => $data->fiscal_document > 11 ? TypeUserEnum::SHOPKEEPER : TypeUserEnum::COMMON,
+            'type' => strlen($data->fiscal_document) > 11 ? TypeUserEnum::SHOPKEEPER : TypeUserEnum::COMMON,
             'password' => $password
         ]);
 
