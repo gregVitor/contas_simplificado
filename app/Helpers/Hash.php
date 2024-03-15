@@ -8,9 +8,9 @@ if (!function_exists('hashDecodeId')) {
      * @return Integer
      */
     function hashDecodeId(
-        string $id
+        string $identifier
     ) {
-        return \Vinkla\Hashids\Facades\Hashids::decode($id);
+        return \Vinkla\Hashids\Facades\Hashids::decode($identifier);
     }
 }
 
@@ -22,8 +22,8 @@ if (!function_exists('hashEncodeId')) {
      * @return String
      */
     function hashEncodeId(
-        int $id
+        int $identifier
     ) {
-        return \Vinkla\Hashids\Facades\Hashids::encode($id);
+        return \Vinkla\Hashids\Facades\Hashids::encode($identifier);
     }
 }
